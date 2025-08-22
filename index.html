@@ -1,0 +1,93 @@
+<!DOCTYPE html> 
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <title>User Form</title>
+    <style>
+      body {
+      margin: 0;
+      padding: 0;
+      display: inline-block; /* Ensure the body behaves like an inline-block */
+    }
+      input  {
+        margin: 6px;
+        width: 300px;
+        height: 25px;
+      }
+      input[type="radio"] {
+        width: 15px;
+        height: 15px;
+      }
+      form {
+        border: 3px black solid;
+        width: 350px;
+        display: block;
+        margin: 20px; 
+      }
+      #btn{
+        background-color: green;
+        margin: 30px;
+        width: 250px;
+        height: 50px; 
+        font-size: 20px;
+      }
+      h1{
+        padding-left: 90px;
+        margin: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <form id="user-form">
+      <h1>User Form</h1>
+      <input type="text" id="name" placeholder="Enter your name" required /><br>
+      <input type="number" id="age" placeholder="Enter your age" min="0" required /><br>
+      <input type="radio" id="male" name="gender" value="Male" required />
+      <label for="male">Male</label><br>
+      <input type="radio" id="female" name="gender" value="Female" required />
+      <label for="female">Female</label><br>
+      <button type="submit" id="btn" style=>Submit</button>
+    </form>
+    <ul id="user-list"></ul>
+
+    <script>
+      const form = document.querySelector("#user-form");
+      const userList = document.querySelector("#user-list");
+      const host = location.origin.replace(/^http/, "ws");
+      const ws = new WebSocket(host);
+
+      ws.onopen = () => {
+        console.log("Client connected to server");
+      };
+      
+      form.onsubmit = (event) => {
+        event.preventDefault(); // Prevent page reload
+
+        //the data of the form 
+        const name = document.querySelector("#name").value;
+        const age = document.querySelector("#age").value;
+        const gender = document.querySelector("input[name='gender']:checked").value;
+
+        // Send data to the server
+        ws.send(JSON.stringify({ name, age, gender }));
+
+        // Clear the form
+        form.reset();
+      };
+
+      //message from the server
+      ws.onmessage = (event) => {
+        const users = JSON.parse(event.data); // Parse updated user list
+
+        // Update the user list
+        userList.innerHTML = "";
+        users.forEach((user) => {
+          const li = document.createElement("li");
+          li.textContent = `${user.name}, ${user.age}, ${user.gender}`;
+          userList.appendChild(li);
+        });
+      };
+    </script>
+  </body>
+</html>
